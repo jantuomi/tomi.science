@@ -8,7 +8,7 @@ Next.js + socket.io.
 
 - Install packages: `npm ci`
 - In development: `npm run dev`
-- In production: `npm run build && npm start` 
+- In production: `npm run build && npm start`
 
 ### Backend
 

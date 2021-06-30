@@ -24,4 +24,4 @@ USER server
 EXPOSE 4000
 
 COPY *.ts *.json ./
-CMD ["npm", "start]
+CMD ["npm", "start"]
