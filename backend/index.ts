@@ -8,15 +8,15 @@ import {
     sql,
 } from "slonik";
 import * as config from "./config";
-import { ValueRecord } from "../shared-types";
-import { Server as SocketIOServer, Socket } from "socket.io";
+import { ValueRecord } from "./shared-types";
+import { Server as SocketIOServer } from "socket.io";
 
 const app = express();
 
 const httpServer = http.createServer(app);
 const io = new SocketIOServer(httpServer, {
     cors: {
-        origin: "*",
+        origin: config.frontendUrl,
     },
 });
 
