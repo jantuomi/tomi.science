@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { ReactElement, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import styles from "../styles/Home.module.css";
 import * as config from "../config";
+import styles from "../styles/Home.module.css";
 
 const socket = io(config.backendUrl);
 
@@ -26,20 +26,31 @@ const Home = (): ReactElement => {
         socket.emit("increment");
     };
 
+    const rotateDeg = value !== undefined ? 10 * value : 0;
+
     return (
         <div className={styles.container}>
             <Head>
                 <title>tomi.science</title>
                 <meta name="description" content="Tomi Koskinen's academic portfolio" />
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="/tomi_sq.png" />
             </Head>
-            <div>
+            <button onClick={increment} className={styles.tomiBtn} style={{
+                transform: `rotate(${rotateDeg}deg)`,
+            }}>
+                <div className={styles.btnInner}>
+                    <span className={styles.counter}>{value}</span>
+                    { /* eslint-disable-next-line @next/next/no-img-element */ }
+                    <img src="/tomi_sq.png" alt="" />
+                </div>
+            </button>
+            {/* <div>
                 value:
                 {value}
             </div>
             <div>
                 <button onClick={increment}>increment</button>
-            </div>
+            </div> */}
         </div>
     );
 };
