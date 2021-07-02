@@ -6,7 +6,7 @@ on:
       - "*.*_*"
 
 env:
-  IMAGE: eu.gcr.io/tomi-science/tomi-science
+  IMAGE: eu.gcr.io/jan-systems/tomi-science
   GCP_PROJECT: jan-systems
   GCR_SERVICE: tomi-science-backend
   GCR_PORT: 4000
