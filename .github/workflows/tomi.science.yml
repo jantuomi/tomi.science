@@ -1,0 +1,86 @@
+name: Deploy website to GCP
+
+on:
+  push:
+    tags:
+      - "*.*_*"
+
+env:
+  IMAGE: eu.gcr.io/tomi-science/tomi-science
+  GCP_PROJECT: jan-systems
+  GCR_SERVICE: tomi-science-backend
+  GCR_PORT: 4000
+  GCR_PLATFORM: managed
+  GCR_REGION: europe-north1
+  GCR_VPC_CONNECTOR: connector1
+  # Env vars comma separated
+  GCR_ENV_VARS: "^&^FRONTEND_URL=https://tomi.science\
+                   &POSTGRES_CONNECTION_STRING=postgresql://tomi_science_user:${{ secrets.DATABASE_PASSWORD }}@10.24.240.3/tomi_science"
+
+jobs:
+  website:
+    name: Build, Push, and Deploy website
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://tomi.science
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Extract Git tag from the ref
+      - name: Define image tag
+        run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Define full image identifier
+        run: echo "IMAGE_AND_TAG=${IMAGE}:${TAG}" >> $GITHUB_ENV
+
+      # Define revision suffix
+      - name: Define revision suffix
+        run: echo "GCR_REVISION_SUFFIX=$(echo ${TAG} | sed 's/\./-/g' | sed 's/_/-rev/g')" >> $GITHUB_ENV
+
+      # Setup gcloud CLI
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT }}
+          export_default_credentials: true
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - name: Configure Docker authentication
+        run: gcloud --quiet auth configure-docker
+
+      # In this step, this action saves a list of existing images,
+      # the cache is created without them in the post run.
+      # It also restores the cache if it exists.
+      - name: Restore Docker cache
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+        with:
+          key: tomi-science-docker-cache-{hash}
+          restore-keys: |
+            tomi-science-docker-cache-
+
+      # Build the Docker image
+      - name: Build image
+        run: docker build -t ${IMAGE_AND_TAG} tomi-science-backend
+
+      # Push the Docker image to Google Container Registry
+      - name: Push image to registry
+        run: docker push ${IMAGE_AND_TAG}
+
+      # Deploy to Google Cloud Run
+      - name: Deploy to Cloud Run
+        run: |-
+          gcloud run deploy ${GCR_SERVICE} \
+            --region=${GCR_REGION} \
+            --platform=${GCR_PLATFORM} \
+            --port=${GCR_PORT} \
+            --revision-suffix=${GCR_REVISION_SUFFIX} \
+            --vpc-connector=${GCR_VPC_CONNECTOR} \
+            --set-env-vars=${GCR_ENV_VARS} \
+            --image=${IMAGE_AND_TAG}
