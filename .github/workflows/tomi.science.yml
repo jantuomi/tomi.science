@@ -67,7 +67,7 @@ jobs:
 
       # Build the Docker image
       - name: Build image
-        run: docker build -t ${IMAGE_AND_TAG} tomi-science-backend
+        run: docker build -t ${IMAGE_AND_TAG} backend
 
       # Push the Docker image to Google Container Registry
       - name: Push image to registry
