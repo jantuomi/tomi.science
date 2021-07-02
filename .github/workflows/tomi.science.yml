@@ -74,6 +74,10 @@ jobs:
       - name: Push backend image to registry
         run: docker push ${IMAGE_AND_TAG}
 
+      # Build frontend
+      - name: Build frontend
+        run: cd frontend && npm ci && npm run build && npm run export
+
       # Deploy backend to Google Cloud Run
       - name: Deploy backend to Cloud Run
         run: |-
@@ -86,11 +90,7 @@ jobs:
             --set-env-vars=${GCR_ENV_VARS} \
             --image=${IMAGE_AND_TAG}
 
-      # Build frontend
-      - name: Build frontend
-        run: cd frontend && npm ci && npm run build && npm run export
-
       # Deploy frontend to GCS
       - name: Deploy frontend to GCS
         run: |-
-          gsutil -h "Cache-Control: no-store, max-age=0" cp -r out/* ${{ env.GCS_BUCKET }}
+          cd frontend && gsutil -h "Cache-Control: no-store, max-age=0" cp -r out/* ${{ env.GCS_BUCKET }}
