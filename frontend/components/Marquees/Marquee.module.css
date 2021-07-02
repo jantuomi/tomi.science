@@ -1,0 +1,38 @@
+.marqueeContainer {
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: #fefefe;
+  color: #333;
+  z-index: 10;
+}
+
+.marquee {
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  margin: 0;
+  line-height: 50px;
+  text-align: center;
+  transform: translateX(100%);
+  animation: scroll-left 10s linear infinite;
+  text-decoration: underline;
+}
+
+@keyframes scroll-left {
+  0% {
+      transform: translateX(100%);
+  }
+  100% {
+      transform: translateX(-100%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+      transform: translateX(-100%);
+  }
+  100% {
+      transform: translateX(100%);
+  }
+}

@@ -7,11 +7,20 @@ import {
     DatabaseTransactionConnectionType,
     sql,
 } from "slonik";
+import { parse } from "node-html-parser";
+import got from "got";
+import { decode } from "he";
+
 import * as config from "./config";
-import { ValueRecord } from "./shared-types";
+import { Paper, ValueRecord } from "./shared-types";
 import { Server as SocketIOServer } from "socket.io";
 
 const app = express();
+
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    next();
+});
 
 const httpServer = http.createServer(app);
 const io = new SocketIOServer(httpServer, {
@@ -51,6 +60,29 @@ io.on("connection", async (socket) => {
         const newValue = await incrementCurrentValue(_connection);
         io.emit("update", newValue); // broadcast
     });
+});
+
+const extractDataFromHtml = (html: string): Paper[] => {
+    const dom = parse(html);
+
+    const tds = dom.querySelectorAll(".gsc_a_tr .gsc_a_t a");
+    const data = tds.map(td => ({
+        url: `https://scholar.google.com${td.getAttribute("data-href") || ""}`,
+        title: decode(td.textContent),
+    }));
+
+    return data;
+};
+
+app.get("/api/papers", async (req, res) => {
+    const resp = await got("https://scholar.google.com/citations?user=HMp8VyMAAAAJ", {
+        responseType: "text",
+        encoding: "latin1",
+    });
+    const html = resp.body;
+    const papers = extractDataFromHtml(html);
+    res.contentType("json");
+    res.end(JSON.stringify(papers));
 });
 
 httpServer.listen(config.port, () => {

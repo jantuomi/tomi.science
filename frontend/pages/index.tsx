@@ -7,19 +7,9 @@ import styles from "../styles/Home.module.css";
 
 const socket = io(config.backendUrl);
 
-const mockData: MarqueeLink[] = [
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-    { title: "Foobar of Foos and Bars", url: "https://example.com" },
-];
-
 const Home = (): ReactElement => {
     const [value, setValue] = useState<number | undefined>(undefined);
+    const [papers, setPapers] = useState<MarqueeLink[]>([]);
 
     useEffect(() => {
         socket.on("connect", () => {
@@ -29,10 +19,19 @@ const Home = (): ReactElement => {
             console.log("disconnected, reason:", reason);
         });
         socket.on("update", (arg: number) => {
-            console.log("update:", arg);
             setValue(arg);
         });
     });
+
+    useEffect(() => {
+        async function fetchPapers() {
+            const resp = await fetch(`${config.backendUrl}/api/papers`);
+            const data = await resp.json();
+
+            setPapers(data);
+        }
+        fetchPapers();
+    }, []);
 
     const increment = () => {
         socket.emit("increment");
@@ -57,7 +56,7 @@ const Home = (): ReactElement => {
                     <img src="/tomi_sq.png" alt="" />
                 </div>
             </button>
-            <Marquees links={mockData} />
+            <Marquees links={papers} />
         </div>
     );
 };
