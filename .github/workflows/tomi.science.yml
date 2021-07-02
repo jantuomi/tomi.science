@@ -15,10 +15,9 @@ env:
   GCR_VPC_CONNECTOR: connector1
   # Env vars comma separated
   GCR_ENV_VARS: "^&^FRONTEND_URL=https://tomi.science\
-                   &POSTGRES_CONNECTION_STRING=postgresql://tomi_science_user:${{ secrets.DATABASE_PASSWORD }}@10.24.240.3/tomi_science\
-                   &NEXT_PUBLIC_BACKEND_URL=https://api.tomi.science"
+                   &POSTGRES_CONNECTION_STRING=postgresql://tomi_science_user:${{ secrets.DATABASE_PASSWORD }}@10.24.240.3/tomi_science"
   GCS_BUCKET: gs://tomi_science_frontend
-
+  NEXT_PUBLIC_BACKEND_URL: https://api.tomi.science
 jobs:
   website:
     name: Build, Push, and Deploy website
