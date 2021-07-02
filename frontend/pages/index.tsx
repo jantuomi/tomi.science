@@ -44,13 +44,6 @@ const Home = (): ReactElement => {
                     <img src="/tomi_sq.png" alt="" />
                 </div>
             </button>
-            {/* <div>
-                value:
-                {value}
-            </div>
-            <div>
-                <button onClick={increment}>increment</button>
-            </div> */}
         </div>
     );
 };
