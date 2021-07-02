@@ -2,8 +2,6 @@
   height: 100vh;
   overflow: hidden;
   position: relative;
-  background: #fefefe;
-  color: #333;
   z-index: 10;
 }
 

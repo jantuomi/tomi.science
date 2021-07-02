@@ -9,6 +9,7 @@ const socket = io(config.backendUrl);
 
 const Home = (): ReactElement => {
     const [value, setValue] = useState<number | undefined>(undefined);
+    const [error, setError] = useState<string>("");
     const [papers, setPapers] = useState<MarqueeLink[]>([]);
 
     useEffect(() => {
@@ -16,7 +17,9 @@ const Home = (): ReactElement => {
             console.log("connected:", socket.id);
         });
         socket.on("disconnect", (reason: string) => {
-            console.log("disconnected, reason:", reason);
+            const err = `disconnected, reason: ${reason}`;
+            console.error(err);
+            setError(err);
         });
         socket.on("update", (arg: number) => {
             setValue(arg);
@@ -25,10 +28,14 @@ const Home = (): ReactElement => {
 
     useEffect(() => {
         async function fetchPapers() {
-            const resp = await fetch(`${config.backendUrl}/api/papers`);
-            const data = await resp.json();
-
-            setPapers(data);
+            try {
+                const resp = await fetch(`${config.backendUrl}/api/papers`);
+                const data = await resp.json();
+                setPapers(data);
+            } catch (err) {
+                console.error(err);
+                setError(String(err));
+            }
         }
         fetchPapers();
     }, []);
@@ -56,6 +63,7 @@ const Home = (): ReactElement => {
                     <img src="/tomi_sq.png" alt="" />
                 </div>
             </button>
+            <div id={styles.errorContainer}>{error}</div>
             <Marquees links={papers} />
         </div>
     );
