@@ -1,10 +1,22 @@
 import Head from "next/head";
 import { ReactElement, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import Marquees, { MarqueeLink } from "../components/Marquees/Marquees";
 import * as config from "../config";
 import styles from "../styles/Home.module.css";
 
 const socket = io(config.backendUrl);
+
+const mockData: MarqueeLink[] = [
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+    { title: "Foobar of Foos and Bars", url: "https://example.com" },
+];
 
 const Home = (): ReactElement => {
     const [value, setValue] = useState<number | undefined>(undefined);
@@ -37,6 +49,7 @@ const Home = (): ReactElement => {
             </Head>
             <button onClick={increment} className={styles.tomiBtn} style={{
                 transform: `rotate(${rotateDeg}deg)`,
+                display: value === undefined ? "none" : "inherit",
             }}>
                 <div className={styles.btnInner}>
                     <span className={styles.counter}>{value}</span>
@@ -44,6 +57,7 @@ const Home = (): ReactElement => {
                     <img src="/tomi_sq.png" alt="" />
                 </div>
             </button>
+            <Marquees links={mockData} />
         </div>
     );
 };
