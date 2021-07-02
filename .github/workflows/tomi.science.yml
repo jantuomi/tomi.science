@@ -15,7 +15,9 @@ env:
   GCR_VPC_CONNECTOR: connector1
   # Env vars comma separated
   GCR_ENV_VARS: "^&^FRONTEND_URL=https://tomi.science\
-                   &POSTGRES_CONNECTION_STRING=postgresql://tomi_science_user:${{ secrets.DATABASE_PASSWORD }}@10.24.240.3/tomi_science"
+                   &POSTGRES_CONNECTION_STRING=postgresql://tomi_science_user:${{ secrets.DATABASE_PASSWORD }}@10.24.240.3/tomi_science\
+                   &NEXT_PUBLIC_BACKEND_URL=https://api.tomi.science"
+  GCS_BUCKET: gs://tomi_science_frontend
 
 jobs:
   website:
@@ -65,16 +67,16 @@ jobs:
           restore-keys: |
             tomi-science-docker-cache-
 
-      # Build the Docker image
-      - name: Build image
+      # Build the backend Docker image
+      - name: Build backend image
         run: docker build -t ${IMAGE_AND_TAG} backend
 
-      # Push the Docker image to Google Container Registry
-      - name: Push image to registry
+      # Push the backend Docker image to Google Container Registry
+      - name: Push backend image to registry
         run: docker push ${IMAGE_AND_TAG}
 
-      # Deploy to Google Cloud Run
-      - name: Deploy to Cloud Run
+      # Deploy backend to Google Cloud Run
+      - name: Deploy backend to Cloud Run
         run: |-
           gcloud run deploy ${GCR_SERVICE} \
             --region=${GCR_REGION} \
@@ -84,3 +86,12 @@ jobs:
             --vpc-connector=${GCR_VPC_CONNECTOR} \
             --set-env-vars=${GCR_ENV_VARS} \
             --image=${IMAGE_AND_TAG}
+
+      # Build frontend
+      - name: Build frontend
+        run: cd frontend && npm run build && npm run export
+
+      # Deploy frontend to GCS
+      - name: Deploy frontend to GCS
+        run: |-
+          gsutil -h "Cache-Control: no-store, max-age=0" cp -r out/* ${{ env.GCS_BUCKET }}
